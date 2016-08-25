@@ -35,7 +35,14 @@ struct wait_load_t {
     bool loaded;
 };
 
-struct cache::cache_impl {
+class cache::cache_impl {
+ public:
+    cache_impl(size_t max_cached_number, external_func_t func) :
+        func(std::move(func)), max_cached_number(max_cached_number),
+        mru_index(0U) {}
+    user_name_t getUserName(user_id_t id);
+
+private:
     external_func_t func;
     size_t max_cached_number;
     std::mutex mt;
@@ -43,12 +50,6 @@ struct cache::cache_impl {
     std::unordered_map<user_id_t, cached_name_t> cached_names;
     std::map<size_t, user_id_t> mru_cached_names;
     std::unordered_map<user_id_t, wait_load_t> wait_list;
-
-    cache_impl(size_t max_cached_number, external_func_t func) :
-        func(std::move(func)),
-        max_cached_number(max_cached_number),
-        mru_index(0U) {
-    }
 
     void update_entry(cached_name_t& cached_name, user_id_t id) {
         mru_cached_names.erase(cached_name.mru_index);
@@ -71,9 +72,6 @@ struct cache::cache_impl {
         cached_name_t& cached_name = insert_result.first->second;
         mru_cached_names.insert(std::make_pair(cached_name.mru_index, id));
     }
-
-    user_name_t getUserName(user_id_t id);
-
 };
 
 }
