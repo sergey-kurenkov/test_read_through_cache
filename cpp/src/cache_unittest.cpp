@@ -5,24 +5,37 @@
 #include <string>
 #include <functional>
 #include <limits>
+#include <chrono>
+#include <thread>
 
 namespace test_ns {
 
 const user_name_t test_user_name_prefix = "TestUserName #";
+
+static user_name_t get_test_user_name(user_id_t id) {
+    return test_user_name_prefix + std::to_string(id);
+}
+
 
 /*
  *
  */
 struct injected_func {
     size_t number_calls = 0;
+    size_t sleep_time = 0;
 
     user_name_t getUserByID(user_id_t id) {
+        if (sleep_time > 0)
+            std::this_thread::sleep_for(std::chrono::seconds(sleep_time));
+
         ++number_calls;
-        return test_user_name_prefix + std::to_string(id);
+        return get_test_user_name(id);
     }
 };
 
 }
+
+
 
 /*
  *
@@ -35,6 +48,10 @@ struct TestInjectedCache : public ::testing::Test {
         a_cache.reset(new test_ns::cache(upper_limit, std::bind(
                 &test_ns::injected_func::getUserByID, &a_test_func,
                         std::placeholders::_1)));
+    }
+
+    void set_sleep_time(size_t seconds) {
+        a_test_func.sleep_time = seconds;
     }
 
     test_ns::injected_func a_test_func;
@@ -81,37 +98,133 @@ TEST(Cache, BuildWithInjectedFunc) {
     }
 }
 
-TEST_F(TestInjectedCache, Create) {
+TEST_F(TestInjectedCache, CheckGetSameKey) {
     try {
         create_cache();
-        SUCCEED();
+        ASSERT_EQ(a_test_func.number_calls, 0);
+        test_ns::user_name_t user_name;
+
+        user_name = a_cache->getUserName(1);
+        ASSERT_EQ(a_test_func.number_calls, 1);
+        ASSERT_STREQ(user_name.c_str(), test_ns::get_test_user_name(1).c_str());
+
+        user_name = a_cache->getUserName(1);
+        ASSERT_EQ(a_test_func.number_calls, 1);
+        ASSERT_STREQ(user_name.c_str(), test_ns::get_test_user_name(1).c_str());
+
+        user_name = a_cache->getUserName(1);
+        ASSERT_EQ(a_test_func.number_calls, 1);
+        ASSERT_STREQ(user_name.c_str(), test_ns::get_test_user_name(1).c_str());
     } catch(std::exception& e) {
         FAIL() << e.what();
     }
 }
 
-TEST_F(TestInjectedCache, Create1) {
+TEST_F(TestInjectedCache, CheckCacheEviction) {
     try {
         create_cache(1);
-        SUCCEED();
+
+        ASSERT_EQ(a_test_func.number_calls, 0);
+        test_ns::user_name_t user_name;
+
+        user_name = a_cache->getUserName(1);
+        ASSERT_EQ(a_test_func.number_calls, 1);
+        ASSERT_STREQ(user_name.c_str(), test_ns::get_test_user_name(1).c_str());
+
+        user_name = a_cache->getUserName(1);
+        ASSERT_EQ(a_test_func.number_calls, 1);
+        ASSERT_STREQ(user_name.c_str(), test_ns::get_test_user_name(1).c_str());
+
+        user_name = a_cache->getUserName(2);
+        ASSERT_EQ(a_test_func.number_calls, 2);
+        ASSERT_STREQ(user_name.c_str(), test_ns::get_test_user_name(2).c_str());
+
+        user_name = a_cache->getUserName(1);
+        ASSERT_EQ(a_test_func.number_calls, 3);
+        ASSERT_STREQ(user_name.c_str(), test_ns::get_test_user_name(1).c_str());
     } catch(std::exception& e) {
         FAIL() << e.what();
     }
 }
 
-TEST_F(TestDefaultCache, Create) {
+TEST_F(TestDefaultCache, CheckGetSameKey) {
     try {
         create_cache();
-        SUCCEED();
+        test_ns::user_name_t user_name;
+
+        user_name = a_cache->getUserName(1);
+        ASSERT_STREQ(user_name.c_str(), test_ns::getUserByID(1).c_str());
+
+        user_name = a_cache->getUserName(1);
+        ASSERT_STREQ(user_name.c_str(), test_ns::getUserByID(1).c_str());
+
+        user_name = a_cache->getUserName(1);
+        ASSERT_STREQ(user_name.c_str(), test_ns::getUserByID(1).c_str());
     } catch(std::exception& e) {
         FAIL() << e.what();
     }
 }
 
-TEST_F(TestDefaultCache, Create1) {
+TEST_F(TestDefaultCache, CheckCacheEviction) {
     try {
         create_cache(1);
-        SUCCEED();
+
+        test_ns::user_name_t user_name;
+
+        user_name = a_cache->getUserName(1);
+        ASSERT_STREQ(user_name.c_str(), test_ns::getUserByID(1).c_str());
+
+        user_name = a_cache->getUserName(1);
+        ASSERT_STREQ(user_name.c_str(), test_ns::getUserByID(1).c_str());
+
+        user_name = a_cache->getUserName(2);
+        ASSERT_STREQ(user_name.c_str(), test_ns::getUserByID(2).c_str());
+
+        user_name = a_cache->getUserName(1);
+        ASSERT_STREQ(user_name.c_str(), test_ns::getUserByID(1).c_str());
+    } catch(std::exception& e) {
+        FAIL() << e.what();
+    }
+}
+
+TEST_F(TestInjectedCache, CheckGetSameKeyInThreads) {
+    try {
+        create_cache();
+        set_sleep_time(1);
+
+        std::thread t1([this]() {
+            ASSERT_STREQ(a_cache->getUserName(1).c_str(),
+                    test_ns::get_test_user_name(1).c_str());
+            ASSERT_EQ(a_test_func.number_calls, 1);
+        });
+        std::thread t2([this]() {
+            ASSERT_STREQ(a_cache->getUserName(1).c_str(),
+                    test_ns::get_test_user_name(1).c_str());
+            ASSERT_EQ(a_test_func.number_calls, 1);
+        });
+        t1.join();
+        t2.join();
+    } catch(std::exception& e) {
+        FAIL() << e.what();
+    }
+}
+
+TEST_F(TestInjectedCache, CheckGetDifferentKeysInThreads) {
+    try {
+        create_cache(1);
+        set_sleep_time(1);
+
+        std::thread t1([this]() {
+            ASSERT_STREQ(a_cache->getUserName(1).c_str(),
+                    test_ns::get_test_user_name(1).c_str());
+        });
+        std::thread t2([this]() {
+            ASSERT_STREQ(a_cache->getUserName(2).c_str(),
+                    test_ns::get_test_user_name(2).c_str());
+        });
+        t1.join();
+        t2.join();
+        ASSERT_EQ(a_test_func.number_calls, 2);
     } catch(std::exception& e) {
         FAIL() << e.what();
     }

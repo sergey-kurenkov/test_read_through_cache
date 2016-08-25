@@ -134,6 +134,7 @@ coverage_report: coverage
 	lcov --directory $(TRAVIS_BUILD_DIR)/coverals --base-directory ./ --capture --output-file $(TRAVIS_BUILD_DIR)/coverals/coverage.info
 	lcov --remove $(TRAVIS_BUILD_DIR)/coverals/coverage.info "/usr*" -o $(TRAVIS_BUILD_DIR)/coverals/coverage.info
 	genhtml -o $(TRAVIS_BUILD_DIR)/coverals -t "find_puddles" --num-spaces 4 $(TRAVIS_BUILD_DIR)/coverals/coverage.info
+	which gnome-open && gnome-open "$(TRAVIS_BUILD_DIR)/coverals/index.html"
 
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)

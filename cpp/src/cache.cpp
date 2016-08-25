@@ -93,8 +93,8 @@ test_ns::user_name_t test_ns::cache::cache_impl::getUserName(user_id_t id) {
     wait_load_t& wait_load = wait_pair.first->second;
     user_name_t loaded_name;
     bool erase_wait_list = false;
+    lk.unlock();
     if (wait_pair.second) {
-        lk.unlock();
         loaded_name = func(id);
         lk.lock();
         insert_entry(loaded_name, id);
