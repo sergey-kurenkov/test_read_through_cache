@@ -68,10 +68,9 @@ else
     CXXFLAGS += -D_WIN32_WINNT=0x0501 -std=gnu++0x -g -Wall -Wextra
 endif
 
-BUILD_DIR = ./build
-TESTS = $(BUILD_DIR)/cache 
-
-#CXXFLAGS += -O3
+CXXFLAGS += -O0
+BUILD_DIR = ./build.test
+TESTS = $(BUILD_DIR)/cache_unittest
 
 ifeq ($(MAKECMDGOALS),test)
     CXXFLAGS += -O0
@@ -89,21 +88,21 @@ ifeq ($(MAKECMDGOALS),coverage)
     CXXFLAGS += -O0
 	BUILD_DIR = ./build.coverage
 	EXTRA_CXXFLAGS += -fprofile-arcs -ftest-coverage
-	TESTS = $(BUILD_DIR)/cache_coverage $(BUILD_DIR)/cache_unittest_coverage
+	TESTS = $(BUILD_DIR)/cache_unittest_coverage
 endif
 
 ifeq ($(MAKECMDGOALS),run_coverage)
     CXXFLAGS += -O0
 	BUILD_DIR = ./build.coverage
 	EXTRA_CXXFLAGS += -fprofile-arcs -ftest-coverage
-	TESTS = $(BUILD_DIR)/cache_coverage $(BUILD_DIR)/cache_unittest_coverage
+	TESTS = $(BUILD_DIR)/cache_unittest_coverage
 endif
 
 ifeq ($(MAKECMDGOALS),coverage_report)
     CXXFLAGS += -O0
 	BUILD_DIR = ./build.coverage
 	EXTRA_CXXFLAGS += -fprofile-arcs -ftest-coverage
-	TESTS = $(BUILD_DIR)/cache_coverage $(BUILD_DIR)/cache_unittest_coverage
+	TESTS = $(BUILD_DIR)/cache_unittest_coverage
 endif
 
 TRAVIS_BUILD_DIR=$(PWD)
@@ -115,8 +114,7 @@ GTEST_HEADERS = $(wildcard $(GTEST_DIR)/include/gtest/*.h) \
 
 # House-keeping build targets.
 
-all : $(BUILD_DIR) $(TEST)
-	make $(BUILD_DIR)/cache
+all : test
 
 test: $(BUILD_DIR) $(BUILD_DIR)/cache_unittest
 
@@ -187,10 +185,11 @@ $(BUILD_DIR)/cache_unittest.o : \
 
 $(BUILD_DIR)/cache_unittest : \
 				$(BUILD_DIR)/cache_unittest.o \
+				$(BUILD_DIR)/cache.o \
 				$(BUILD_DIR)/gtest_main.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) $^ -o $@ $(RPATH)
 
 $(BUILD_DIR)/cache_unittest_coverage : \
-			$(BUILD_DIR)/cache_unittest.o $(BUILD_DIR)/gtest_main.a
+			$(BUILD_DIR)/cache_unittest.o $(BUILD_DIR)/cache.o $(BUILD_DIR)/gtest_main.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(EXTRA_CXXFLAGS) $(LDFLAGS) $^ -o $@ $(RPATH)
 
