@@ -1,0 +1,38 @@
+sudo: false
+language: cpp
+compiler:
+  - gcc
+
+before_install:
+  - pip install --user cpp-coveralls
+  - pip install --user pyyaml   
+  
+install:
+- if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
+- if [ "$CXX" = "g++" ]; then sudo apt-get install -y lcov; fi
+  
+addons:
+  apt:
+    sources:
+    - ubuntu-toolchain-r-test
+    packages:
+    - gcc-4.8
+    - g++-4.8
+    - python-yaml
+    - lcov
+
+script:
+  - make & make test & make run_test & make coverage
+
+after_success:
+  # Copying Coveralls data to a separate folder
+  - mkdir -p $TRAVIS_BUILD_DIR/coverals
+  - find . -name "*.gcda" -exec cp "{}" $TRAVIS_BUILD_DIR/coverals/ \;
+  - find . -name "*.gcno" -exec cp "{}" $TRAVIS_BUILD_DIR/coverals/ \;
+  
+  - lcov --directory $TRAVIS_BUILD_DIR/coverals --base-directory ./ --capture --output-file $TRAVIS_BUILD_DIR/coverals/coverage.info
+  - lcov --remove $TRAVIS_BUILD_DIR/coverals/coverage.info "/usr*" -o $TRAVIS_BUILD_DIR/coverals/coverage.info
+
+  - cd $TRAVIS_BUILD_DIR
+  - coveralls --exclude-pattern ".*googletest.*" --exclude-pattern ".*_unittest.*" --exclude lib --exclude tests --gcov-options '\-lp'
+
