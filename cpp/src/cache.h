@@ -18,6 +18,9 @@ class cache {
  public:
     cache(size_t cache_limit = std::numeric_limits<size_t>::max(),
           external_func_t = &test_ns::getUserByID);
+    cache(const cache&) = delete;
+    cache& operator=(const cache&) = delete;
+    
     user_name_t getUserName(user_id_t);
  
  private:

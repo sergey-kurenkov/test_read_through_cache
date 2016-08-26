@@ -229,3 +229,65 @@ TEST_F(TestInjectedCache, CheckGetDifferentKeysInThreads) {
         FAIL() << e.what();
     }
 }
+
+TEST_F(TestInjectedCache, CheckGetDifferentKeysIn4Threads) {
+    try {
+        create_cache(2);
+        set_sleep_time(1);
+
+        std::thread t1([this]() {
+            ASSERT_STREQ(a_cache->getUserName(1).c_str(),
+                    test_ns::get_test_user_name(1).c_str());
+        });
+        std::thread t2([this]() {
+            ASSERT_STREQ(a_cache->getUserName(1).c_str(),
+                    test_ns::get_test_user_name(1).c_str());
+        });
+        std::thread t3([this]() {
+            ASSERT_STREQ(a_cache->getUserName(2).c_str(),
+                    test_ns::get_test_user_name(2).c_str());
+        });
+        std::thread t4([this]() {
+            ASSERT_STREQ(a_cache->getUserName(2).c_str(),
+                    test_ns::get_test_user_name(2).c_str());
+        });
+        t1.join();
+        t2.join();
+        t3.join();
+        t4.join();
+        ASSERT_EQ(a_test_func.number_calls, 2);
+    } catch(std::exception& e) {
+        FAIL() << e.what();
+    }
+}
+
+TEST_F(TestInjectedCache, CheckGetDifferentKeysIn4ThreadsWithUpLimit1) {
+    try {
+        create_cache(1);
+        set_sleep_time(1);
+
+        std::thread t1([this]() {
+            ASSERT_STREQ(a_cache->getUserName(1).c_str(),
+                    test_ns::get_test_user_name(1).c_str());
+        });
+        std::thread t2([this]() {
+            ASSERT_STREQ(a_cache->getUserName(1).c_str(),
+                    test_ns::get_test_user_name(1).c_str());
+        });
+        std::thread t3([this]() {
+            ASSERT_STREQ(a_cache->getUserName(2).c_str(),
+                    test_ns::get_test_user_name(2).c_str());
+        });
+        std::thread t4([this]() {
+            ASSERT_STREQ(a_cache->getUserName(2).c_str(),
+                    test_ns::get_test_user_name(2).c_str());
+        });
+        t1.join();
+        t2.join();
+        t3.join();
+        t4.join();
+        ASSERT_EQ(a_test_func.number_calls, 2);
+    } catch(std::exception& e) {
+        FAIL() << e.what();
+    }
+}
