@@ -8,6 +8,7 @@ config = {
     'install_requires': ['nose'],
     'packages': ['read_through_cache'],
     'scripts': [],
-    'name': 'read_through_cache'
+    'name': 'read_through_cache',
+    "url": "https://github.com/skwllsp/read_through_cache"
 }
 setup(**config)
