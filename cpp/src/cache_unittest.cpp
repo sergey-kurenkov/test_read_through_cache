@@ -78,7 +78,20 @@ struct TestDefaultCache : public ::testing::Test {
  */
 TEST(Cache, BuildDefault) {
     try {
-        test_ns::cache a_cache();
+      test_ns::cache *a_cache = new test_ns::cache;
+      delete a_cache;
+      SUCCEED();
+    } catch(std::exception& e) {
+        FAIL() << e.what();
+    }
+}
+
+/*
+ *
+ */
+TEST(Cache, BuildWithUpperLimit) {
+    try {
+        test_ns::cache a_cache(1);
         SUCCEED();
     } catch(std::exception& e) {
         FAIL() << e.what();
