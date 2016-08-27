@@ -21,6 +21,6 @@ run_coverage:
 
 clean:
 	$(MAKE) -C cpp $@
-    find . -name "*.pyc" -exec rm {} \;
+	find . -name "*.pyc" -exec rm {} \;
 
 
