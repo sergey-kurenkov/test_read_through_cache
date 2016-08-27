@@ -17,40 +17,9 @@
 
 .PHONY: all test coverage coverage-report
 
-PLATFORM=UNKNOWN_OS
-ifeq ($(shell uname), Linux)
-  PLATFORM=linux
-endif
-ifeq ($(shell uname), CYGWIN_NT-4.0)
-  PLATFORM=win32
-endif
-ifeq ($(shell uname), CYGWIN_NT-5.0)
-  PLATFORM=win32
-endif
-ifeq ($(shell uname), CYGWIN_NT-5.1)
-  PLATFORM=win32
-endif
-ifeq ($(shell uname), MINGW32_NT-4.0)
-  PLATFORM=win32
-endif
-ifeq ($(shell uname), MINGW32-5.0)
-  PLATFORM=win32
-endif
-ifeq ($(shell uname), MINGW32_NT-5.1)
-  PLATFORM=win32
-endif
+PLATFORM=linux
 
-ifeq "$(PLATFORM)" "UNKNOWN_OS"
-    $(error Unknown OS)
-endif
-
-ifeq "$(PLATFORM)" "linux"
-    GTEST_DIR = ./googletest/googletest
-endif
-
-ifeq "$(PLATFORM)" "win32"
-    GTEST_DIR = ./googletest.cygwin/googletest
-endif
+GTEST_DIR = ./googletest/googletest
 
 # Where to find user code.
 USER_DIR = ./src
