@@ -4,6 +4,7 @@
 
 import mock
 import read_through_cache
+import nose
 
 def setup():
     """ setup """
@@ -33,6 +34,12 @@ def test_get_names():
     assert cache.get_user_name(1) == read_through_cache.get_user_by_id.getUserByID(1)
     assert cache.get_user_name(2) == read_through_cache.get_user_by_id.getUserByID(2)
     assert cache.get_user_name(2) == read_through_cache.get_user_by_id.getUserByID(2)
+
+@nose.tools.raises(read_through_cache.cache.CacheException)
+def test_bad_id():
+    """ get entries from a default cache """
+    cache = read_through_cache.cache.Cache()
+    cache.get_user_name(-1)
 
 def test_get_names_with_limit():
     """ get entries from a default cache with a limit on the number of entries """
