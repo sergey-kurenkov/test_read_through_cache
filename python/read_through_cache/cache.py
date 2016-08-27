@@ -1,3 +1,5 @@
+#!/usr/bin/python
+# coding=utf-8
 """
 Implement a simple read-through cache for Users which looks up Users by ID and
 returns their name by callinggetUserByID() for users not in the cache.
