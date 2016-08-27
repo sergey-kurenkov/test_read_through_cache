@@ -20,6 +20,7 @@ class cache {
           external_func_t = &test_ns::getUserByID);
     cache(const cache&) = delete;
     cache& operator=(const cache&) = delete;
+    ~cache();
     
     user_name_t getUserName(user_id_t);
  

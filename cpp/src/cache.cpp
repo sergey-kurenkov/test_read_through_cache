@@ -136,6 +136,13 @@ test_ns::cache::cache(size_t max_cached_number,
 /*
  *
  */
+test_ns::cache::~cache() {
+    delete impl;
+}
+
+/*
+ *
+ */
 test_ns::user_name_t test_ns::cache::getUserName(user_id_t id) {
     return impl->getUserName(id);
 }
