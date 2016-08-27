@@ -23,6 +23,11 @@ addons:
 
 script:
   - make & make test & make run_test & make coverage
+  - echo "running cache autotests"
+  - make run_test
+  - echo "running cache autotests 2"
+  - ./cpp/build.test/cache_unittest
+
 
 after_success:
   # Copying Coveralls data to a separate folder
