@@ -27,7 +27,7 @@ script:
   - echo "running cache autotests"
   - make run_test
   - echo "running coverage"
-  - make coverage
+  - make run_coverage
 
 
 after_success:
