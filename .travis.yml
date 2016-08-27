@@ -22,11 +22,12 @@ addons:
     - lcov
 
 script:
-  - make & make test & make run_test & make coverage
+  - echo "make all"
+  - CXXFLAGS="-O2" make
   - echo "running cache autotests"
   - make run_test
-  - echo "running cache autotests 2"
-  - ./cpp/build.test/cache_unittest
+  - echo "running coverage"
+  - make coverage
 
 
 after_success:
