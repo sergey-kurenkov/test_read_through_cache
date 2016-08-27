@@ -45,7 +45,7 @@ def test_bad_id():
     cache.get_user_name(-1)
 
 def test_get_names_with_limit():
-    """ get entries from a default cache with a limit on the number of entries """
+    """ get entries from a default cache with a limit """
     cache = Cache(1)
     assert cache.get_user_name(1) == getUserByID(1)
     assert cache.get_user_name(2) == getUserByID(2)
@@ -72,7 +72,7 @@ def test_with_injected_func():
         assert injected_func.call_count == 2
 
 def test_with_func_and_limit():
-    """ get entries from a test cache """
+    """ get entries from a test cache with limit"""
     with mock.patch('read_through_cache.get_user_by_id.getUserByID',
                     return_value='test_name') as injected_func:
         assert not injected_func.called
