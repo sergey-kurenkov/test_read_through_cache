@@ -6,8 +6,8 @@ import mock
 import nose
 
 import read_through_cache.get_user_by_id
-from read_through_cache.cache import Cache, CacheException
-from read_through_cache.get_user_by_id import getUserByID
+from read_through_cache import Cache, CacheException
+from read_through_cache import getUserByID
 
 def setup():
     """ setup """
